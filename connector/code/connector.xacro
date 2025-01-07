@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="connect_robot">
+  <!-- This first link called "my world" is empty -->
+  <link name="my world"></link>
+
+  <!-- Define the connector link -->
+  <link name="connector_link">
+    
+    <!-- Visual Properties -->
+    <visual name="">
+      <geometry>
+        <cylinder radius="0.05" length="0.02"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.8 0.2 0.2 1.0"/>
+      </material>
+    </visual>
+
+    <!-- Collision Properties -->
+    <collision>
+      <geometry>
+        <cylinder radius="0.05" length="0.02"/>
+      </geometry>
+    </collision>
+
+    <!-- Inertial Properties -->
+    <inertial>
+      <mass value="0.1"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="0.0001" ixy="0.0" ixz="0.0"
+               iyy="0.0001" iyz="0.0"
+               izz="0.0001"/>
+    </inertial>
+  </link>
+
+  <!-- Define a joint if needed -->
+  <!-- Example of a fixed joint -->
+  <joint name="connector_joint" type="fixed">
+    <parent link="my world"/>
+    <child link="connector_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+</robot>
+

@@ -1,0 +1,265 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robot1">
+  
+  <!-- This first link called "my world" is empty -->
+  <link name="my world"></link>
+  
+  <!-- The base origin is offset from the world origin. -->
+  <joint name="base_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="my world"/>
+    <child link="cube_frame"/>        
+  </joint>
+  
+  <!-- Define properties for cube dimensions -->
+  <xacro:property name="cube_length" value="1.0"/>    <!-- Length of the cube -->
+  <xacro:property name="cube_girth" value="0.1"/>     <!-- Thickness of the edges -->
+
+  <!-- Center coordinates of the cube -->
+  <xacro:property name="cube_x" value="0.0"/>
+  <xacro:property name="cube_y" value="0.0"/>
+  <xacro:property name="cube_z" value="${cube_length / 2}"/> <!-- Half the cube length -->
+
+  <!-- Define properties for the disk dimensions -->
+  <xacro:property name="disk_radius" value="0.3"/>        <!-- Radius of the disk -->
+  <xacro:property name="disk_thickness" value="0.1"/>     <!-- Thickness (height) of the disk -->
+  
+  <!-- Define properties for the connector dimensions -->
+  <xacro:property name="connector_radius" value="0.01"/>        <!-- Radius of the connector -->
+  <xacro:property name="connector_thickness" value="0.02"/>     <!-- Thickness (height) of the connector -->
+  
+  <!-- Defining colors -->
+  <xacro:property name="red" value="1 0 0 1"/>
+  <xacro:property name="yellow" value="1 0.5 0 1"/>
+  <xacro:property name="green" value="0 1 0 1"/>
+  
+  <!-- Macro for defining a visual edge -->
+  <xacro:macro name="visual_edge" params="edge x y z r p yaw">
+    <visual name="${edge}">
+      <origin xyz="${x} ${y} ${z}" rpy="${r} ${p} ${yaw}"/>
+      <geometry>
+        <box size="${cube_girth} ${cube_girth} ${cube_length}"/>
+      </geometry>
+      <material name="blue">
+        <color rgba="0 0 1 1"/> <!-- Blue color with RGBA values -->
+      </material>
+      <!-- Material and other visual properties can be added here -->
+    </visual>
+  </xacro:macro>
+  
+  <!-- Macro for defining a disk link-->
+  <xacro:macro name="disk_link_macro" params="name xyz rpy radius thickness rgba">
+    <link name="${name}">
+      <!-- Visual element for the disk -->
+      <visual name="disk">
+        <origin xyz="${xyz}" rpy="${rpy}"/>
+        <geometry>
+          <cylinder radius="${radius}" length="${thickness}"/>
+        </geometry>
+        <material name="color_${rgba}">
+          <color rgba="${rgba}"/> <!-- Color with RGBA values -->
+        </material>
+      </visual>
+    
+      <!-- Collision properties for the disk -->
+      <collision name="disk_collision">
+        <origin xyz="${xyz}" rpy="${rpy}"/>
+        <geometry>
+          <cylinder radius="${radius}" length="${thickness}"/>
+        </geometry>
+      </collision>
+
+      <!-- Inertial properties for the disk -->
+      <inertial>
+        <origin xyz="${xyz}"/>
+        <mass value="1.0"/>
+        <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.1"/>
+      </inertial>
+    </link>
+  </xacro:macro>
+  
+    <!-- Macro to create a single connector link -->
+  <xacro:macro name="connector_link_macro" params="name xyz rpy radius thickness rgba">
+    <link name="${name}">
+      <!-- Visual element for the disk -->
+      <visual name="connector_visual">
+        <origin xyz="${xyz}" rpy="${rpy}"/>
+        <geometry>
+          <cylinder radius="${radius}" length="${thickness}"/>
+        </geometry>
+        <material name="color_${rgba}">
+          <color rgba="${rgba}"/> <!-- Color with RGBA values -->
+        </material>
+      </visual>
+    
+      <!-- Collision properties for the disk -->
+      <collision name="connector_collision">
+        <origin xyz="${xyz}" rpy="${rpy}"/>
+        <geometry>
+          <cylinder radius="${radius}" length="${thickness}"/>
+        </geometry>
+      </collision>
+
+      <!-- Inertial Properties -->
+      <inertial>
+      <origin xyz="${xyz}"/>
+        <mass value="0.1"/>
+        <inertia ixx="0.0001" ixy="0.0" ixz="0.0"
+                 iyy="0.0001" iyz="0.0"
+                 izz="0.0001"/>
+      </inertial>
+    </link>
+
+  </xacro:macro>
+  
+  <!-- Main robot model -->
+  <link name="cube_frame">
+    <!-- Visual element for the main cube -->
+    <xacro:visual_edge edge="ZXY" x="${(cube_length - cube_girth) / 2}" y="${cube_y+(cube_length - cube_girth) / 2}" z="${cube_z}" r="0" p="0" yaw="0"/>
+    <xacro:visual_edge edge="ZX_Y" x="${-(cube_length - cube_girth) / 2}" y="${cube_y+(cube_length - cube_girth) / 2}" z="${cube_z}" r="0" p="0" yaw="0"/>
+    <xacro:visual_edge edge="ZXY_" x="${(cube_length - cube_girth) / 2}" y="${cube_y-(cube_length - cube_girth) / 2}" z="${cube_z}" r="0" p="0" yaw="0"/>
+    <xacro:visual_edge edge="ZX_Y_" x="${-(cube_length - cube_girth) / 2}" y="${cube_y-(cube_length - cube_girth) / 2}" z="${cube_z}" r="0" p="0" yaw="0"/>
+    
+    <xacro:visual_edge edge="XYZ" y="${(cube_length - cube_girth) / 2}" z="${cube_z+(cube_length/2)-(cube_girth/2)}" x="${cube_x}" r="0" p="${pi/2}" yaw="0"/>
+    <xacro:visual_edge edge="XY_Z" y="${-(cube_length - cube_girth) / 2}" z="${cube_z+(cube_length/2)-(cube_girth/2)}" x="${cube_x}" r="0" p="${pi/2}" yaw="0"/>
+    <xacro:visual_edge edge="XYZ_" y="${(cube_length - cube_girth) / 2}" z="${cube_z-(cube_length/2)+(cube_girth/2)}" x="${cube_x}" r="0" p="${pi/2}" yaw="0"/>
+    <xacro:visual_edge edge="XY_Z_" y="${-(cube_length - cube_girth) / 2}" z="${cube_z-(cube_length/2)+(cube_girth/2)}" x="${cube_x}" r="0" p="${pi/2}" yaw="0"/>
+    
+    <xacro:visual_edge edge="YZX" z="${cube_z+(cube_length/2)-(cube_girth/2)}" x="${cube_x+(cube_length - cube_girth) / 2}" y="${cube_y}" r="${pi/2}" p="0" yaw="0"/>
+    <xacro:visual_edge edge="YZ_X" z="${cube_z-(cube_length/2)+(cube_girth/2)}" x="${cube_x+(cube_length - cube_girth) / 2}" y="${cube_y}" r="${pi/2}" p="0" yaw="0"/>
+    <xacro:visual_edge edge="YZX_" z="${cube_z+(cube_length/2)-(cube_girth/2)}" x="${cube_x-(cube_length - cube_girth) / 2}" y="${cube_y}" r="${pi/2}" p="0" yaw="0"/>
+    <xacro:visual_edge edge="YZ_X_" z="${cube_z-(cube_length/2)+(cube_girth/2)}" x="${cube_x-(cube_length - cube_girth) / 2}" y="${cube_y}" r="${pi/2}" p="0" yaw="0"/>
+    
+    <!-- Collision properties for the main link -->
+    <collision name="collision">
+      <origin xyz="${cube_x} ${cube_y} ${cube_z}"/>
+      <geometry>
+        <box size="${cube_length} ${cube_length} ${cube_length}"/>
+      </geometry>
+    </collision>
+
+    <!-- Inertial properties -->
+    <inertial>
+      <origin xyz="${cube_x} ${cube_y} ${cube_z}"/>
+      <mass value="1.0"/>
+      <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.1"/>
+    </inertial>
+  </link>
+
+  <!-- Defining the Three Disks -->
+  <xacro:disk_link_macro name="disk_link_X" xyz="0 0 0" rpy="0 ${pi/2} 0" radius="${disk_radius}" thickness="${disk_thickness}" rgba="${red}"/>
+  <xacro:disk_link_macro name="disk_link_Y" xyz="0 0 0" rpy="${pi/2} 0 0" radius="${disk_radius}" thickness="${disk_thickness}" rgba="${yellow}"/>
+  <xacro:disk_link_macro name="disk_link_Z" xyz="0 0 0" rpy="0 0 0" radius="${disk_radius}" thickness="${disk_thickness}" rgba="${green}"/>
+  
+  <!-- Defining the connectors -->
+  <xacro:connector_link_macro name="connector_11" xyz="0 0 0" rpy="0 ${pi/2} 0" radius="${connector_radius}" thickness="${connector_thickness}" rgba="0 0 0 1"/>
+  <xacro:connector_link_macro name="connector_12" xyz="0 0 0" rpy="0 ${pi/2} 0" radius="${connector_radius}" thickness="${connector_thickness}" rgba="0 0 0 1"/>
+  <xacro:connector_link_macro name="connector_13" xyz="0 0 0" rpy="${pi/2} 0 0" radius="${connector_radius}" thickness="${connector_thickness}" rgba="0 0 0 1"/>
+  <xacro:connector_link_macro name="connector_14" xyz="0 0 0" rpy="${pi/2} 0 0" radius="${connector_radius}" thickness="${connector_thickness}" rgba="0 0 0 1"/>
+  <xacro:connector_link_macro name="connector_15" xyz="0 0 0" rpy="0 0 0" radius="${connector_radius}" thickness="${connector_thickness}" rgba="0 0 0 1"/>
+  <xacro:connector_link_macro name="connector_16" xyz="0 0 0" rpy="0 0 0" radius="${connector_radius}" thickness="${connector_thickness}" rgba="0 0 0 1"/>
+
+  <!-- Joint between cube_frame and connectors -->
+  <joint name="connector_joint_x" type="revolute">
+	<parent link="cube_frame"/>
+	<child link="connector_11"/>
+	<origin xyz="${cube_x+(cube_length/2)-3.25*connector_thickness-disk_thickness} ${cube_y} ${cube_z}"/>
+	<axis xyz="1 0 0"/> <!-- Rotation axis along the y-axis -->
+	<limit upper="0" lower="0" effort="0.0" velocity="0.0"/> <!-- Joint effort and velocity limits -->
+  </joint>
+ 
+ <joint name="connector_joint_x_" type="revolute">
+	<parent link="cube_frame"/>
+	<child link="connector_12"/>
+	<origin xyz="${cube_x-(cube_length/2)+3.25*connector_thickness+disk_thickness} ${cube_y} ${cube_z}"/>
+	<axis xyz="1 0 0"/> <!-- Rotation axis along the y-axis -->
+	<limit upper="0" lower="0" effort="0.0" velocity="0.0"/> <!-- Joint effort and velocity limits -->
+  </joint>
+  <joint name="connector_joint_y" type="revolute">
+	<parent link="cube_frame"/>
+	<child link="connector_13"/>
+	<origin xyz="${cube_x} ${cube_y+(cube_length/2)-3.25*connector_thickness-disk_thickness} ${cube_z}"/>
+	<axis xyz="1 0 0"/> <!-- Rotation axis along the y-axis -->
+	<limit upper="0" lower="0" effort="0.0" velocity="0.0"/> <!-- Joint effort and velocity limits -->
+  </joint>
+  <joint name="connector_joint_y_" type="revolute">
+	<parent link="cube_frame"/>
+	<child link="connector_14"/>
+	<origin xyz="${cube_x} ${cube_y-(cube_length/2)+3.25*connector_thickness+disk_thickness} ${cube_z}"/>
+	<axis xyz="1 0 0"/> <!-- Rotation axis along the y-axis -->
+	<limit upper="0" lower="0" effort="0.0" velocity="0.0"/> <!-- Joint effort and velocity limits -->
+  </joint>
+  <joint name="connector_joint_z" type="revolute">
+	<parent link="cube_frame"/>
+	<child link="connector_15"/>
+	<origin xyz="${cube_x} ${cube_y} ${cube_z+(cube_length/2)-3.25*connector_thickness-disk_thickness}"/>
+	<axis xyz="1 0 0"/> <!-- Rotation axis along the y-axis -->
+	<limit upper="0" lower="0" effort="0.0" velocity="0.0"/> <!-- Joint effort and velocity limits -->
+  </joint>
+  <joint name="connector_joint_z_" type="revolute">
+	<parent link="cube_frame"/>
+	<child link="connector_16"/>
+	<origin xyz="${cube_x} ${cube_y} ${cube_z-(cube_length/2)+3.25*connector_thickness+disk_thickness}"/>
+	<axis xyz="1 0 0"/> <!-- Rotation axis along the y-axis -->
+	<limit upper="0" lower="0" effort="0.0" velocity="0.0"/> <!-- Joint effort and velocity limits -->
+  </joint>
+  
+  <!-- Joint between cube_frame and disk_links -->
+  <joint name="cube_disk_joint_X" type="continuous">
+    <origin xyz="${cube_x+(cube_length/2)-disk_thickness} ${cube_y} ${cube_z}"/>
+    <parent link="cube_frame"/>
+    <child link="disk_link_X"/>        
+    <axis xyz="1 0 0"/> <!-- Rotation axis along the x-axis -->
+    <limit effort="1000.0" velocity="1000.0"/> <!-- Joint effort and velocity limits -->
+  </joint>
+  
+  <joint name="cube_disk_joint_Y" type="continuous">
+    <origin xyz="${cube_x} ${cube_y+(cube_length/2)-disk_thickness} ${cube_z}"/>
+    <parent link="cube_frame"/>
+    <child link="disk_link_Y"/>        
+    <axis xyz="0 1 0"/> <!-- Rotation axis along the y-axis -->
+    <limit effort="1000.0" velocity="1000.0"/> <!-- Joint effort and velocity limits -->
+  </joint>
+  
+  <joint name="cube_disk_joint_Z" type="continuous">
+    <origin xyz="${cube_x} ${cube_y} ${cube_z+(cube_length/2)-disk_thickness}"/>
+    <parent link="cube_frame"/>
+    <child link="disk_link_Z"/>        
+    <axis xyz="0 0 1"/> <!-- Rotation axis along the z-axis -->
+    <limit effort="1000.0" velocity="1000.0"/> <!-- Joint effort and velocity limits -->
+  </joint>
+  
+  <!-- JointController plugin to control the joint velocity (for cube_disk_joint_X)-->
+  <gazebo>
+    <plugin filename="libignition-gazebo-joint-controller-system.so"
+            name="ignition::gazebo::systems::JointController">
+      <joint_name>cube_disk_joint_X</joint_name>
+      <topic>cmd_vel_r</topic>
+      <!-- PID controller for smooth velocity control -->
+      <use_force_commands>true</use_force_commands>
+      <p_gain>0.15</p_gain>
+    </plugin>
+    
+    <!-- JointController plugin to control the joint velocity (for cube_disk_joint_Y)-->
+    <plugin filename="libignition-gazebo-joint-controller-system.so"
+            name="ignition::gazebo::systems::JointController">
+      <joint_name>cube_disk_joint_Y</joint_name>
+      <topic>cmd_vel_y</topic>
+      <!-- PID controller for smooth velocity control -->
+      <use_force_commands>true</use_force_commands>
+      <p_gain>0.15</p_gain>
+    </plugin>
+    
+    <!-- JointController plugin to control the joint velocity (for cube_disk_joint_Z)-->
+    <plugin filename="libignition-gazebo-joint-controller-system.so"
+            name="ignition::gazebo::systems::JointController">
+      <joint_name>cube_disk_joint_Z</joint_name>
+      <topic>cmd_vel_g</topic>
+      <!-- PID controller for smooth velocity control -->
+      <use_force_commands>true</use_force_commands>
+      <p_gain>0.15</p_gain>
+    </plugin>
+  </gazebo>
+  
+</robot>
+
